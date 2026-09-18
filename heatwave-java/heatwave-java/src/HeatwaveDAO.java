@@ -361,6 +361,79 @@ public class HeatwaveDAO {
         return results;
     }
 
+    // Advanced Query 1: Aggregation with GROUP BY
+    public List<String> getHeatwaveStatsByCountry() throws SQLException {
+        String sql = "SELECT co.Name AS Country, COUNT(h.Heatwave_ID) AS Total_Heatwaves, "
+                   + "SUM(h.Mortality) AS Total_Mortality, AVG(h.Maximum_Temperature) AS Avg_Max_Temp "
+                   + "FROM Heatwave h "
+                   + "JOIN Geography g ON h.Location_ID = g.Location_ID "
+                   + "JOIN City ci ON g.City_ID = ci.City_ID "
+                   + "JOIN Country co ON ci.Country_Code = co.Country_ID "
+                   + "GROUP BY co.Name "
+                   + "ORDER BY Total_Mortality DESC";
+
+        List<String> results = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                results.add(String.format("Country: %s | Heatwaves: %d | Total Deaths: %d | Avg Max Temp: %.1f C",
+                    rs.getString("Country"), rs.getInt("Total_Heatwaves"),
+                    rs.getInt("Total_Mortality"), rs.getDouble("Avg_Max_Temp")));
+            }
+        }
+        return results;
+    }
+
+    // Advanced Query 2: Subquery
+    public List<String> getSevereHeatwavesAboveAverage() throws SQLException {
+        String sql = "SELECT ci.Name AS City, h.Start_Date, h.Maximum_Temperature "
+                   + "FROM Heatwave h "
+                   + "JOIN Geography g ON h.Location_ID = g.Location_ID "
+                   + "JOIN City ci ON g.City_ID = ci.City_ID "
+                   + "WHERE h.Maximum_Temperature > (SELECT AVG(Maximum_Temperature) FROM Heatwave) "
+                   + "ORDER BY h.Maximum_Temperature DESC";
+
+        List<String> results = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                results.add(String.format("City: %s | Start Date: %s | Max Temp: %.1f C (Above Average)",
+                    rs.getString("City"), rs.getDate("Start_Date").toString(), rs.getDouble("Maximum_Temperature")));
+            }
+        }
+        return results;
+    }
+
+    // Advanced Query 3: Conditional Aggregation and HAVING
+    public List<String> getInjurySurvivalStats() throws SQLException {
+        String sql = "SELECT it.Type_Name, COUNT(vi.Victim_Injury_ID) AS Total_Cases, "
+                   + "SUM(CASE WHEN vi.Survivor = true THEN 1 ELSE 0 END) AS Survivors "
+                   + "FROM Injury_Type it "
+                   + "LEFT JOIN Victim_Injury vi ON it.Injury_Type_ID = vi.Injury_Type_ID "
+                   + "GROUP BY it.Type_Name "
+                   + "HAVING Total_Cases > 0 "
+                   + "ORDER BY Total_Cases DESC";
+
+        List<String> results = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                int total = rs.getInt("Total_Cases");
+                int survivors = rs.getInt("Survivors");
+                double survivalRate = (total == 0) ? 0 : ((double) survivors / total) * 100;
+                results.add(String.format("Injury: %s | Cases: %d | Survivors: %d | Survival Rate: %.1f%%",
+                    rs.getString("Type_Name"), total, survivors, survivalRate));
+            }
+        }
+        return results;
+    }
+
     /** All heatwaves in one country, newest first. */
     public List<String> getHeatwavesByCountry(String countryName) throws SQLException {
         String sql = "SELECT h.Heatwave_ID, h.Start_Date, h.End_Date, "
