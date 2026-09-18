@@ -386,13 +386,24 @@ public class HeatwaveDAO {
         return results;
     }
 
-    // Advanced Query 2: Subquery
+    /** 
+     * Advanced Query 2: Subquery.
+     * Finds heatwaves where the maximum temperature was higher than the average 
+     * maximum temperature for that specific country.
+     */
     public List<String> getSevereHeatwavesAboveAverage() throws SQLException {
-        String sql = "SELECT ci.Name AS City, h.Start_Date, h.Maximum_Temperature "
+        String sql = "SELECT ci.Name AS City, co.Name AS Country, h.Start_Date, h.Maximum_Temperature "
                    + "FROM Heatwave h "
                    + "JOIN Geography g ON h.Location_ID = g.Location_ID "
                    + "JOIN City ci ON g.City_ID = ci.City_ID "
-                   + "WHERE h.Maximum_Temperature > (SELECT AVG(Maximum_Temperature) FROM Heatwave) "
+                   + "JOIN Country co ON ci.Country_Code = co.Country_ID "
+                   + "WHERE h.Maximum_Temperature >= ( "
+                   + "    SELECT AVG(h2.Maximum_Temperature) "
+                   + "    FROM Heatwave h2 "
+                   + "    JOIN Geography g2 ON h2.Location_ID = g2.Location_ID "
+                   + "    JOIN City ci2 ON g2.City_ID = ci2.City_ID "
+                   + "    WHERE ci2.Country_Code = co.Country_ID "
+                   + ") "
                    + "ORDER BY h.Maximum_Temperature DESC";
 
         List<String> results = new ArrayList<>();
@@ -401,8 +412,11 @@ public class HeatwaveDAO {
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                results.add(String.format("City: %s | Start Date: %s | Max Temp: %.1f C (Above Average)",
-                    rs.getString("City"), rs.getDate("Start_Date").toString(), rs.getDouble("Maximum_Temperature")));
+                results.add(String.format("City: %s (%s) | Start Date: %s | Max Temp: %.1f C",
+                    rs.getString("City"),
+                    rs.getString("Country"),
+                    rs.getDate("Start_Date").toString(),
+                    rs.getDouble("Maximum_Temperature")));
             }
         }
         return results;
