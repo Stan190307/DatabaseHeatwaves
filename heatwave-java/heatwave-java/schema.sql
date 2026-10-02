@@ -13,6 +13,15 @@ CREATE TABLE Country (
 -- ---------------------------------------------------------------------
 -- 2. City
 -- ---------------------------------------------------------------------
+
+CREATE TABLE City (
+    City_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    Region VARCHAR(100),
+    Country_Code INT NOT NULL,
+    FOREIGN KEY (Country_Code) REFERENCES Country(Country_ID) ON DELETE CASCADE
+);
+
 CREATE TABLE Postal_Area (
     Postal_Code VARCHAR(20) PRIMARY KEY,
     City_ID INT NOT NULL,

@@ -11,13 +11,8 @@ import java.util.List;
 
 /**
  * Data Access Object for the heatwave database.
- *
- * Every method here does one SQL operation. Other parts of the project
- * (mock data generation, advanced queries) should call these methods
- * instead of writing their own SQL.
- *
- * All statements use PreparedStatement with ? placeholders. This is both
- * safer (no SQL injection) and handles quoting and date formats for us.
+ * 
+ * Updated for the 3NF schema structure.
  */
 public class HeatwaveDAO {
 
@@ -50,6 +45,17 @@ public class HeatwaveDAO {
         }
     }
 
+    public void insertPostalArea(String postalCode, int cityId) throws SQLException {
+        String sql = "INSERT IGNORE INTO Postal_Area (Postal_Code, City_ID) VALUES (?, ?)";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, postalCode);
+            stmt.setInt(2, cityId);
+            stmt.executeUpdate();
+        }
+    }
+
     public int insertGeography(int cityId, double latitude, double longitude,
                                String weatherStation) throws SQLException {
         String sql = "INSERT INTO Geography "
@@ -67,36 +73,28 @@ public class HeatwaveDAO {
         }
     }
 
-    public int insertHospital(int cityId, String streetAddress,
-                              String postalAddress, int capacity) throws SQLException {
+    public int insertHospital(String postalCode, String streetAddress,
+                              int capacity) throws SQLException {
         String sql = "INSERT INTO Hospital "
-                   + "(City_ID, Street_Address, Postal_Address, Capacity) "
-                   + "VALUES (?, ?, ?, ?)";
+                   + "(Postal_Code, Street_Address, Capacity) "
+                   + "VALUES (?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            stmt.setInt(1, cityId);
+            stmt.setString(1, postalCode);
             stmt.setString(2, streetAddress);
-            stmt.setString(3, postalAddress);
-            stmt.setInt(4, capacity);
+            stmt.setInt(3, capacity);
             stmt.executeUpdate();
             return getGeneratedKey(stmt);
         }
     }
 
-    /**
-     * Inserts a heatwave. Prevention_ID is left NULL on purpose:
-     * Heatwave and Prevention reference each other, so the heatwave has to
-     * exist before a prevention row can point at it. Use
-     * linkPreventionToHeatwave() afterwards to fill it in.
-     */
     public int insertHeatwave(int locationId, LocalDate startDate, LocalDate endDate,
-                              double minTemp, double maxTemp, double avgTemp,
-                              int mortality, double heatIndex) throws SQLException {
+                              double minTemp, double maxTemp, double heatIndex) throws SQLException {
         String sql = "INSERT INTO Heatwave "
                    + "(Location_ID, Start_Date, End_Date, Minimal_Temperature, "
-                   + "Maximum_Temperature, Avg_Temperature, Mortality, Heat_Index) "
-                   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                   + "Maximum_Temperature, Heat_Index) "
+                   + "VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -105,26 +103,22 @@ public class HeatwaveDAO {
             stmt.setDate(3, Date.valueOf(endDate));
             stmt.setDouble(4, minTemp);
             stmt.setDouble(5, maxTemp);
-            stmt.setDouble(6, avgTemp);
-            stmt.setInt(7, mortality);
-            stmt.setDouble(8, heatIndex);
+            stmt.setDouble(6, heatIndex);
             stmt.executeUpdate();
             return getGeneratedKey(stmt);
         }
     }
 
-    public int insertPrevention(int heatwaveId, int locationId,
-                                String description, boolean deployed) throws SQLException {
+    public int insertPrevention(int heatwaveId, String description, boolean deployed) throws SQLException {
         String sql = "INSERT INTO Prevention "
-                   + "(Heatwave_ID, Location_ID, Description, Deployment) "
-                   + "VALUES (?, ?, ?, ?)";
+                   + "(Heatwave_ID, Description, Deployment) "
+                   + "VALUES (?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setInt(1, heatwaveId);
-            stmt.setInt(2, locationId);
-            stmt.setString(3, description);
-            stmt.setBoolean(4, deployed);
+            stmt.setString(2, description);
+            stmt.setBoolean(3, deployed);
             stmt.executeUpdate();
             return getGeneratedKey(stmt);
         }
@@ -149,12 +143,12 @@ public class HeatwaveDAO {
     }
 
     public int insertVictim(int heatwaveId, String firstName, String lastName,
-                            int age, String sex, int cityId,
-                            String streetAddress, String postalCode) throws SQLException {
+                            int age, String sex, String postalCode,
+                            String streetAddress) throws SQLException {
         String sql = "INSERT INTO Victim "
                    + "(Heatwave_ID, First_Name, Last_Name, Age, Sex, "
-                   + "City_ID, Street_Address, Postal_Code) "
-                   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                   + "Postal_Code, Street_Address) "
+                   + "VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -163,9 +157,8 @@ public class HeatwaveDAO {
             stmt.setString(3, lastName);
             stmt.setInt(4, age);
             stmt.setString(5, sex);
-            stmt.setInt(6, cityId);
+            stmt.setString(6, postalCode);
             stmt.setString(7, streetAddress);
-            stmt.setString(8, postalCode);
             stmt.executeUpdate();
             return getGeneratedKey(stmt);
         }
@@ -183,7 +176,6 @@ public class HeatwaveDAO {
         }
     }
 
-    /** Hospital is optional here, so pass null if the victim was not admitted. */
     public int insertVictimInjury(int victimId, int injuryTypeId,
                                   Integer hospitalId, boolean survivor) throws SQLException {
         String sql = "INSERT INTO Victim_Injury "
@@ -209,18 +201,6 @@ public class HeatwaveDAO {
     // UPDATE
     // =================================================================
 
-    /** Fills in the Prevention_ID on a heatwave after the prevention exists. */
-    public int linkPreventionToHeatwave(int heatwaveId, int preventionId) throws SQLException {
-        String sql = "UPDATE Heatwave SET Prevention_ID = ? WHERE Heatwave_ID = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, preventionId);
-            stmt.setInt(2, heatwaveId);
-            return stmt.executeUpdate();
-        }
-    }
-
     public int updateHospitalCapacity(int hospitalId, int newCapacity) throws SQLException {
         String sql = "UPDATE Hospital SET Capacity = ? WHERE Hospital_ID = ?";
         try (Connection conn = DatabaseConnection.getConnection();
@@ -228,17 +208,6 @@ public class HeatwaveDAO {
 
             stmt.setInt(1, newCapacity);
             stmt.setInt(2, hospitalId);
-            return stmt.executeUpdate();
-        }
-    }
-
-    public int updateHeatwaveMortality(int heatwaveId, int newMortality) throws SQLException {
-        String sql = "UPDATE Heatwave SET Mortality = ? WHERE Heatwave_ID = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setInt(1, newMortality);
-            stmt.setInt(2, heatwaveId);
             return stmt.executeUpdate();
         }
     }
@@ -270,8 +239,6 @@ public class HeatwaveDAO {
 
     // =================================================================
     // DELETE
-    // Child rows must be deleted before their parents, otherwise the
-    // foreign keys block the delete.
     // =================================================================
 
     public int deleteVictimInjury(int victimInjuryId) throws SQLException {
@@ -284,7 +251,6 @@ public class HeatwaveDAO {
         }
     }
 
-    /** Deletes a victim and any injury records attached to them. */
     public int deleteVictim(int victimId) throws SQLException {
         String deleteInjuries = "DELETE FROM Victim_Injury WHERE Victim_ID = ?";
         String deleteVictim = "DELETE FROM Victim WHERE Victim_ID = ?";
@@ -333,11 +299,11 @@ public class HeatwaveDAO {
     // READ - select methods
     // =================================================================
 
-    /** All victims of one heatwave, with their city name. */
     public List<String> getVictimsByHeatwave(int heatwaveId) throws SQLException {
         String sql = "SELECT v.Victim_ID, v.First_Name, v.Last_Name, v.Age, v.Sex, c.Name "
                    + "FROM Victim v "
-                   + "JOIN City c ON v.City_ID = c.City_ID "
+                   + "JOIN Postal_Area pa ON v.Postal_Code = pa.Postal_Code "
+                   + "JOIN City c ON pa.City_ID = c.City_ID "
                    + "WHERE v.Heatwave_ID = ? "
                    + "ORDER BY v.Age DESC";
 
@@ -361,14 +327,16 @@ public class HeatwaveDAO {
         return results;
     }
 
-    // Advanced Query 1: Aggregation with GROUP BY
     public List<String> getHeatwaveStatsByCountry() throws SQLException {
-        String sql = "SELECT co.Name AS Country, COUNT(h.Heatwave_ID) AS Total_Heatwaves, "
-                   + "SUM(h.Mortality) AS Total_Mortality, AVG(h.Maximum_Temperature) AS Avg_Max_Temp "
-                   + "FROM Heatwave h "
-                   + "JOIN Geography g ON h.Location_ID = g.Location_ID "
-                   + "JOIN City ci ON g.City_ID = ci.City_ID "
-                   + "JOIN Country co ON ci.Country_Code = co.Country_ID "
+        String sql = "SELECT co.Name AS Country, COUNT(DISTINCT h.Heatwave_ID) AS Total_Heatwaves, "
+                   + "COALESCE(SUM(CASE WHEN vi.Survivor = FALSE THEN 1 ELSE 0 END), 0) AS Total_Mortality, "
+                   + "AVG(h.Maximum_Temperature) AS Avg_Max_Temp "
+                   + "FROM Country co "
+                   + "JOIN City ci ON co.Country_ID = ci.Country_Code "
+                   + "JOIN Geography g ON ci.City_ID = g.City_ID "
+                   + "JOIN Heatwave h ON g.Location_ID = h.Location_ID "
+                   + "LEFT JOIN Victim v ON h.Heatwave_ID = v.Heatwave_ID "
+                   + "LEFT JOIN Victim_Injury vi ON v.Victim_ID = vi.Victim_ID "
                    + "GROUP BY co.Name "
                    + "ORDER BY Total_Mortality DESC";
 
@@ -386,11 +354,6 @@ public class HeatwaveDAO {
         return results;
     }
 
-    /** 
-     * Advanced Query 2: Subquery.
-     * Finds heatwaves where the maximum temperature was higher than the average 
-     * maximum temperature for that specific country.
-     */
     public List<String> getSevereHeatwavesAboveAverage() throws SQLException {
         String sql = "SELECT ci.Name AS City, co.Name AS Country, h.Start_Date, h.Maximum_Temperature "
                    + "FROM Heatwave h "
@@ -422,7 +385,6 @@ public class HeatwaveDAO {
         return results;
     }
 
-    // Advanced Query 3: Conditional Aggregation and HAVING
     public List<String> getInjurySurvivalStats() throws SQLException {
         String sql = "SELECT it.Type_Name, COUNT(vi.Victim_Injury_ID) AS Total_Cases, "
                    + "SUM(CASE WHEN vi.Survivor = true THEN 1 ELSE 0 END) AS Survivors "
@@ -448,15 +410,18 @@ public class HeatwaveDAO {
         return results;
     }
 
-    /** All heatwaves in one country, newest first. */
     public List<String> getHeatwavesByCountry(String countryName) throws SQLException {
         String sql = "SELECT h.Heatwave_ID, h.Start_Date, h.End_Date, "
-                   + "h.Maximum_Temperature, h.Mortality, ci.Name AS City_Name "
+                   + "h.Maximum_Temperature, ci.Name AS City_Name, "
+                   + "COALESCE(SUM(CASE WHEN vi.Survivor = FALSE THEN 1 ELSE 0 END), 0) AS Calculated_Mortality "
                    + "FROM Heatwave h "
                    + "JOIN Geography g  ON h.Location_ID = g.Location_ID "
                    + "JOIN City ci      ON g.City_ID = ci.City_ID "
                    + "JOIN Country co   ON ci.Country_Code = co.Country_ID "
+                   + "LEFT JOIN Victim v ON h.Heatwave_ID = v.Heatwave_ID "
+                   + "LEFT JOIN Victim_Injury vi ON v.Victim_ID = vi.Victim_ID "
                    + "WHERE co.Name = ? "
+                   + "GROUP BY h.Heatwave_ID, h.Start_Date, h.End_Date, h.Maximum_Temperature, ci.Name "
                    + "ORDER BY h.Start_Date DESC";
 
         List<String> results = new ArrayList<>();
@@ -472,18 +437,18 @@ public class HeatwaveDAO {
                         rs.getDate("Start_Date").toString(),
                         rs.getDate("End_Date").toString(),
                         rs.getDouble("Maximum_Temperature"),
-                        rs.getInt("Mortality")));
+                        rs.getInt("Calculated_Mortality")));
                 }
             }
         }
         return results;
     }
 
-    /** Every hospital in a city. */
     public List<String> getHospitalsByCity(String cityName) throws SQLException {
-        String sql = "SELECT h.Hospital_ID, h.Street_Address, h.Postal_Address, h.Capacity "
+        String sql = "SELECT h.Hospital_ID, h.Street_Address, h.Postal_Code, h.Capacity "
                    + "FROM Hospital h "
-                   + "JOIN City c ON h.City_ID = c.City_ID "
+                   + "JOIN Postal_Area pa ON h.Postal_Code = pa.Postal_Code "
+                   + "JOIN City c ON pa.City_ID = c.City_ID "
                    + "WHERE c.Name = ? "
                    + "ORDER BY h.Capacity DESC";
 
@@ -497,7 +462,7 @@ public class HeatwaveDAO {
                     results.add(String.format("Hospital #%d, %s %s, capacity %d",
                         rs.getInt("Hospital_ID"),
                         rs.getString("Street_Address"),
-                        rs.getString("Postal_Address"),
+                        rs.getString("Postal_Code"),
                         rs.getInt("Capacity")));
                 }
             }
@@ -505,12 +470,9 @@ public class HeatwaveDAO {
         return results;
     }
 
-    /** Counts rows in any table. Handy for checking mock data loaded properly. */
     public int countRows(String tableName) throws SQLException {
-        // Table names cannot be parameterised, so we check it against a
-        // fixed list first instead of pasting user input into the SQL.
-        List<String> allowed = List.of("Country", "City", "Geography", "Hospital",
-            "Heatwave", "Prevention", "Infrastructure_Impact", "Victim",
+        List<String> allowed = List.of("Country", "City", "Postal_Area", "Geography", 
+            "Hospital", "Heatwave", "Prevention", "Infrastructure_Impact", "Victim",
             "Injury_Type", "Victim_Injury");
 
         if (!allowed.contains(tableName)) {
@@ -528,10 +490,6 @@ public class HeatwaveDAO {
             return 0;
         }
     }
-
-    // =================================================================
-    // Helper
-    // =================================================================
 
     private int getGeneratedKey(PreparedStatement stmt) throws SQLException {
         try (ResultSet keys = stmt.getGeneratedKeys()) {
