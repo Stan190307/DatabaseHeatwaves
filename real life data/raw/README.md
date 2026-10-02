@@ -64,3 +64,48 @@ The years 2020 and 2021 were excluded because mortality in those years was stron
 
 There was no real-world source for `Heat_Index` in the selected datasets, so this value was set to `0`.
 
+## 3. Re-running the Week 3 queries
+
+The example queries from week 3 were run again after adding the real-world data.
+
+### Query 1 - Heatwave statistics by country
+
+The query still worked after adding the real-world data.
+
+France returned 238 records and Spain 237 records. Italy and the Netherlands still only contained the existing mock data.
+
+We noticed that the column name `Total_Heatwaves` was a bit misleading, because the real-world data contains one record per city and week, not one record per separate heatwave event.
+
+Because of this, we changed the name to `Total_Weekly_Records`.
+
+The rest of the query did not need to be changed.
+
+### Query 2 - Temperatures above the country average
+
+The query also worked after adding the real-world data.
+
+It returned records where the maximum temperature was above the average maximum temperature for that country.
+
+The original query also returned mock-data records from cities such as Rome, Lyon and Valencia.
+
+To better test the real-world data, the query was adapted to only include Paris and Madrid.
+
+The adapted query returned the expected results, so the joins and temperature data are working correctly.
+
+### Query 3 - Injury survival statistics
+
+This query still worked after adding the real-world data.
+
+It returned the existing injury and survival statistics from the database.
+
+The real-world datasets used in this assignment do not contain individual victim or injury data. Because of this, the new real-world data did not change the results of this query.
+
+The query itself did not need to be changed.
+
+### Conclusion
+
+The Week 3 queries still work with the real-world data.
+
+Some small changes were needed to make the results easier to interpret. In particular, the first query was renamed to better describe the weekly records, and the second query was filtered to Paris and Madrid when testing the real-world data.
+
+The third query still works, but is only based on the existing mock victim and injury data.
