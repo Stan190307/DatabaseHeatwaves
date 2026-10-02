@@ -102,6 +102,21 @@ The real-world datasets used in this assignment do not contain individual victim
 
 The query itself did not need to be changed.
 
+## 4. 3NF check
+
+### Transitive Dependencies in "Victim" (violation)
+
+Postal_Code already determines the City_ID. This creates a transitive dependency: Victim_ID --> Postal_Code --> City_ID
+
+### Aggregated Data in "Heatwave"(violation)
+
+Avg_temperature: A derived value from measurement records rather than an atomic fact.
+
+### Overreduncancy (Violation)
+
+"Heatwave" references Location_ID
+"Prevention" references Heatwave_ID and Location_ID
+
 ### Conclusion
 
 The Week 3 queries still work with the real-world data.

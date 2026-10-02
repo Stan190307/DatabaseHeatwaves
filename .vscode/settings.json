@@ -1,5 +1,6 @@
 {
     "java.project.referencedLibraries": [
-        "heatwave-java/heatwave-java/lib/mysql-connector-j-26.7.0.jar"
+        "heatwave-java/heatwave-java/lib/mysql-connector-j-26.7.0.jar",
+        "c:\\Users\\stanw.PCSTAN\\Downloads\\mysql-connector-j-26.7.0\\mysql-connector-j-26.7.0\\mysql-connector-j-26.7.0.jar"
     ]
 }
