@@ -88,6 +88,23 @@ public class Main {
                 System.out.println("   " + line);
             }
 
+            System.out.println("\n=== Step 2b: Advanced Queries ===");
+
+System.out.println("Heatwave Statistics by Country:");
+for (String line : dao.getHeatwaveStatsByCountry()) {
+    System.out.println("  " + line);
+}
+
+System.out.println("\nSevere Heatwaves (Above Global Average):");
+for (String line : dao.getSevereHeatwavesAboveAverage()) {
+    System.out.println("  " + line);
+}
+
+System.out.println("\nInjury Survival Statistics:");
+for (String line : dao.getInjurySurvivalStats()) {
+    System.out.println("  " + line);
+}
+
             System.out.println("Hospitals in Maastricht:");
             for (String line : dao.getHospitalsByCity("Maastricht")) {
                 System.out.println("   " + line);
