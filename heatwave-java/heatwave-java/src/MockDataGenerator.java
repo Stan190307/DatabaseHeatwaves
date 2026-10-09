@@ -117,66 +117,79 @@ public class MockDataGenerator {
                 "Milan Linate Weather Station"
             );
 
+            dao.insertPostalArea("75011", paris);
+
+            dao.insertPostalArea("69003", lyon);
+            dao.insertPostalArea("69002", lyon);
+            dao.insertPostalArea("69006", lyon);
+
+            dao.insertPostalArea("28040", madrid);
+            dao.insertPostalArea("28013", madrid);
+            dao.insertPostalArea("28020", madrid);
+
+            dao.insertPostalArea("46010", valencia);
+            dao.insertPostalArea("46002", valencia);
+            dao.insertPostalArea("46005", valencia);
+
+            dao.insertPostalArea("00161", rome);
+            dao.insertPostalArea("00184", rome);
+            dao.insertPostalArea("00198", rome);
+
+            dao.insertPostalArea("20133", milan);
+            dao.insertPostalArea("20121", milan);
+            dao.insertPostalArea("20124", milan);
 
             // ============================================================
             // 4. HOSPITALS
             // ============================================================
 
-            int maastrichtHospital = dao.insertHospital(
-                maastricht,
-                "Medical Campus 1",
-                "6229 AA",
-                700
-            );
+        int maastrichtHospital = dao.insertHospital(
+            "6229 AA",
+            "Medical Campus 1",
+            700
+        );
 
-            int amsterdamHospital = dao.insertHospital(
-                amsterdam,
-                "Health Avenue 15",
-                "1105 AZ",
-                900
-            );
+        int amsterdamHospital = dao.insertHospital(
+            "1105 AZ",
+            "Health Avenue 15",
+            900
+        );
 
-            int parisHospital = dao.insertHospital(
-                paris,
-                "Rue de Santé 10",
-                "75013",
-                1200
-            );
+        int parisHospital = dao.insertHospital(
+            "75013",
+            "Rue de Santé 10",
+            1200
+        );
 
-            int lyonHospital = dao.insertHospital(
-                lyon,
-                "Avenue Médicale 6",
-                "69003",
-                750
-            );
+        int lyonHospital = dao.insertHospital(
+            "69003",
+            "Avenue Médicale 6",
+            750
+        );
 
-            int madridHospital = dao.insertHospital(
-                madrid,
-                "Calle Salud 21",
-                "28040",
-                1000
-            );
+        int madridHospital = dao.insertHospital(
+            "28040",
+            "Calle Salud 21",
+            1000
+        );
 
-            int valenciaHospital = dao.insertHospital(
-                valencia,
-                "Avenida Hospital 8",
-                "46010",
-                650
-            );
+        int valenciaHospital = dao.insertHospital(
+            "46010",
+            "Avenida Hospital 8",
+            650
+        );
 
-            int romeHospital = dao.insertHospital(
-                rome,
-                "Via Medica 30",
-                "00161",
-                950
-            );
+        int romeHospital = dao.insertHospital(
+            "00161",
+            "Via Medica 30",
+            950
+        );
 
-            int milanHospital = dao.insertHospital(
-                milan,
-                "Via Salute 12",
-                "20133",
-                850
-            );
+        int milanHospital = dao.insertHospital(
+            "20133",
+            "Via Salute 12",
+            850
+        );
 
 
             // ============================================================
@@ -278,56 +291,48 @@ public class MockDataGenerator {
 
             int preventionMaastricht = dao.insertPrevention(
                 heatwaveMaastricht,
-                maastrichtLocation,
                 "Cooling centres opened in public buildings",
                 true
             );
 
             int preventionAmsterdam = dao.insertPrevention(
                 heatwaveAmsterdam,
-                amsterdamLocation,
                 "Public heat warnings and free water points",
                 true
             );
 
             int preventionParis = dao.insertPrevention(
                 heatwaveParis,
-                parisLocation,
                 "Emergency cooling centres and outreach to elderly residents",
                 true
             );
 
             int preventionLyon = dao.insertPrevention(
                 heatwaveLyon,
-                lyonLocation,
                 "Public information campaign",
                 false
             );
 
             int preventionMadrid = dao.insertPrevention(
                 heatwaveMadrid,
-                madridLocation,
                 "Cooling shelters and adjusted working hours",
                 true
             );
 
             int preventionValencia = dao.insertPrevention(
                 heatwaveValencia,
-                valenciaLocation,
                 "Public hydration stations",
                 true
             );
 
             int preventionRome = dao.insertPrevention(
                 heatwaveRome,
-                romeLocation,
                 "Heat alerts issued to residents",
                 false
             );
 
             int preventionMilan = dao.insertPrevention(
                 heatwaveMilan,
-                milanLocation,
                 "Cooling centres and hospital preparedness measures",
                 true
             );
@@ -468,7 +473,6 @@ public class MockDataGenerator {
                 "de Vries",
                 78,
                 "Male",
-                maastricht,
                 "Example Street 12",
                 "6211 AA"
             );
@@ -479,7 +483,6 @@ public class MockDataGenerator {
                 "Bakker",
                 83,
                 "Female",
-                maastricht,
                 "Market Street 8",
                 "6211 BB"
             );
@@ -490,7 +493,6 @@ public class MockDataGenerator {
                 "El Amrani",
                 55,
                 "Male",
-                amsterdam,
                 "Canal Street 31",
                 "1012 AB"
             );
@@ -501,7 +503,6 @@ public class MockDataGenerator {
                 "Jansen",
                 34,
                 "Female",
-                amsterdam,
                 "Park Road 22",
                 "1054 AC"
             );
@@ -512,7 +513,6 @@ public class MockDataGenerator {
                 "Martin",
                 81,
                 "Male",
-                paris,
                 "Rue Exemple 14",
                 "75005"
             );
@@ -523,7 +523,6 @@ public class MockDataGenerator {
                 "Bernard",
                 72,
                 "Female",
-                paris,
                 "Avenue Exemple 9",
                 "75011"
             );
@@ -534,7 +533,6 @@ public class MockDataGenerator {
                 "Robert",
                 41,
                 "Male",
-                lyon,
                 "Rue Centrale 17",
                 "69002"
             );
@@ -545,7 +543,6 @@ public class MockDataGenerator {
                 "Petit",
                 67,
                 "Female",
-                lyon,
                 "Rue du Parc 6",
                 "69006"
             );
@@ -556,7 +553,6 @@ public class MockDataGenerator {
                 "Garcia",
                 76,
                 "Male",
-                madrid,
                 "Calle Central 28",
                 "28013"
             );
@@ -567,7 +563,6 @@ public class MockDataGenerator {
                 "Martinez",
                 69,
                 "Female",
-                madrid,
                 "Calle Norte 15",
                 "28020"
             );
@@ -578,7 +573,6 @@ public class MockDataGenerator {
                 "Lopez",
                 28,
                 "Male",
-                valencia,
                 "Calle Mar 5",
                 "46002"
             );
@@ -589,7 +583,6 @@ public class MockDataGenerator {
                 "Sanchez",
                 74,
                 "Female",
-                valencia,
                 "Avenida Sol 19",
                 "46005"
             );
@@ -600,7 +593,6 @@ public class MockDataGenerator {
                 "Rossi",
                 82,
                 "Male",
-                rome,
                 "Via Centrale 7",
                 "00184"
             );
@@ -611,7 +603,6 @@ public class MockDataGenerator {
                 "Romano",
                 63,
                 "Female",
-                rome,
                 "Via Verde 23",
                 "00198"
             );
@@ -622,7 +613,6 @@ public class MockDataGenerator {
                 "Bianchi",
                 45,
                 "Male",
-                milan,
                 "Via Milano 18",
                 "20121"
             );
@@ -633,7 +623,6 @@ public class MockDataGenerator {
                 "Conti",
                 79,
                 "Female",
-                milan,
                 "Via Nord 11",
                 "20124"
             );
