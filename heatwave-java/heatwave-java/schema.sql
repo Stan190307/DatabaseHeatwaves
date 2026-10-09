@@ -13,6 +13,17 @@ CREATE TABLE Country (
 -- ---------------------------------------------------------------------
 -- 2. City
 -- ---------------------------------------------------------------------
+CREATE TABLE City (
+    City_ID INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    Region VARCHAR(100),
+    Country_Code INT NOT NULL,
+    FOREIGN KEY (Country_Code) REFERENCES Country(Country_ID) ON DELETE CASCADE
+);
+
+-- ---------------------------------------------------------------------
+-- 3. Postal_Area
+-- ---------------------------------------------------------------------
 CREATE TABLE Postal_Area (
     Postal_Code VARCHAR(20) PRIMARY KEY,
     City_ID INT NOT NULL,
@@ -20,7 +31,7 @@ CREATE TABLE Postal_Area (
 );
 
 -- ---------------------------------------------------------------------
--- 3. Geography
+-- 4. Geography
 -- ---------------------------------------------------------------------
 CREATE TABLE Geography (
     Location_ID INT AUTO_INCREMENT PRIMARY KEY,
@@ -32,7 +43,7 @@ CREATE TABLE Geography (
 );
 
 -- ---------------------------------------------------------------------
--- 4. Hospital
+-- 5. Hospital
 -- ---------------------------------------------------------------------
 CREATE TABLE Hospital (
     Hospital_ID INT AUTO_INCREMENT PRIMARY KEY,
@@ -43,7 +54,7 @@ CREATE TABLE Hospital (
 );
 
 -- ---------------------------------------------------------------------
--- 5. Heatwave
+-- 6. Heatwave
 -- Note: Prevention_ID is created here WITHOUT its foreign key.
 -- The constraint is added at the bottom of this file, because
 -- Heatwave and Prevention point at each other (circular reference).
@@ -55,12 +66,15 @@ CREATE TABLE Heatwave (
     End_Date DATE NOT NULL,
     Minimal_Temperature DECIMAL(5, 2),
     Maximum_Temperature DECIMAL(5, 2),
+    Avg_Temperature DECIMAL(5, 2),
+    Mortality INT,
     Heat_Index DECIMAL(5, 2),
+    Prevention_ID INT NULL,
     FOREIGN KEY (Location_ID) REFERENCES Geography(Location_ID) ON DELETE CASCADE
 );
 
 -- ---------------------------------------------------------------------
--- 6. Prevention
+-- 7. Prevention
 -- ---------------------------------------------------------------------
 CREATE TABLE Prevention (
     Prevention_ID INT AUTO_INCREMENT PRIMARY KEY,
@@ -71,7 +85,7 @@ CREATE TABLE Prevention (
 );
 
 -- ---------------------------------------------------------------------
--- 7. Infrastructure_Impact
+-- 8. Infrastructure_Impact
 -- ---------------------------------------------------------------------
 CREATE TABLE Infrastructure_Impact (
     Impact_ID INT AUTO_INCREMENT PRIMARY KEY,
@@ -83,7 +97,7 @@ CREATE TABLE Infrastructure_Impact (
 );
 
 -- ---------------------------------------------------------------------
--- 8. Victim
+-- 9. Victim
 -- ---------------------------------------------------------------------
 CREATE TABLE Victim (
     Victim_ID INT AUTO_INCREMENT PRIMARY KEY,
@@ -99,7 +113,7 @@ CREATE TABLE Victim (
 );
 
 -- ---------------------------------------------------------------------
--- 9. Injury_Type
+-- 10. Injury_Type
 -- ---------------------------------------------------------------------
 CREATE TABLE Injury_Type (
     Injury_Type_ID INT AUTO_INCREMENT PRIMARY KEY,
@@ -108,7 +122,7 @@ CREATE TABLE Injury_Type (
 );
 
 -- ---------------------------------------------------------------------
--- 10. Victim_Injury  (bridge table)
+-- 11. Victim_Injury  (bridge table)
 -- ---------------------------------------------------------------------
 CREATE TABLE Victim_Injury (
     Victim_Injury_ID INT AUTO_INCREMENT PRIMARY KEY,
@@ -120,3 +134,11 @@ CREATE TABLE Victim_Injury (
     FOREIGN KEY (Injury_Type_ID) REFERENCES Injury_Type(Injury_Type_ID) ON DELETE CASCADE,
     FOREIGN KEY (Hospital_ID) REFERENCES Hospital(Hospital_ID) ON DELETE SET NULL
 );
+
+-- ---------------------------------------------------------------------
+-- Circular FK: Heatwave.Prevention_ID -> Prevention.Prevention_ID
+-- Added here because Prevention didn't exist yet when Heatwave was created.
+-- ---------------------------------------------------------------------
+ALTER TABLE Heatwave
+    ADD CONSTRAINT fk_heatwave_prevention
+    FOREIGN KEY (Prevention_ID) REFERENCES Prevention(Prevention_ID) ON DELETE SET NULL;

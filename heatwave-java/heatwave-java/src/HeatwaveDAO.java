@@ -67,18 +67,17 @@ public class HeatwaveDAO {
         }
     }
 
-    public int insertHospital(int cityId, String streetAddress,
-                              String postalAddress, int capacity) throws SQLException {
+    public int insertHospital(String postalCode, String streetAddress,
+                              int capacity) throws SQLException {
         String sql = "INSERT INTO Hospital "
-                   + "(City_ID, Street_Address, Postal_Address, Capacity) "
-                   + "VALUES (?, ?, ?, ?)";
+                   + "(Postal_Code, Street_Address, Capacity) "
+                   + "VALUES (?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            stmt.setInt(1, cityId);
+            stmt.setString(1, postalCode);
             stmt.setString(2, streetAddress);
-            stmt.setString(3, postalAddress);
-            stmt.setInt(4, capacity);
+            stmt.setInt(3, capacity);
             stmt.executeUpdate();
             return getGeneratedKey(stmt);
         }
@@ -113,18 +112,17 @@ public class HeatwaveDAO {
         }
     }
 
-    public int insertPrevention(int heatwaveId, int locationId,
+    public int insertPrevention(int heatwaveId,
                                 String description, boolean deployed) throws SQLException {
         String sql = "INSERT INTO Prevention "
-                   + "(Heatwave_ID, Location_ID, Description, Deployment) "
-                   + "VALUES (?, ?, ?, ?)";
+                   + "(Heatwave_ID, Description, Deployment) "
+                   + "VALUES (?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setInt(1, heatwaveId);
-            stmt.setInt(2, locationId);
-            stmt.setString(3, description);
-            stmt.setBoolean(4, deployed);
+            stmt.setString(2, description);
+            stmt.setBoolean(3, deployed);
             stmt.executeUpdate();
             return getGeneratedKey(stmt);
         }
@@ -149,12 +147,12 @@ public class HeatwaveDAO {
     }
 
     public int insertVictim(int heatwaveId, String firstName, String lastName,
-                            int age, String sex, int cityId,
+                            int age, String sex,
                             String streetAddress, String postalCode) throws SQLException {
         String sql = "INSERT INTO Victim "
                    + "(Heatwave_ID, First_Name, Last_Name, Age, Sex, "
-                   + "City_ID, Street_Address, Postal_Code) "
-                   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                   + "Street_Address, Postal_Code) "
+                   + "VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
@@ -163,9 +161,8 @@ public class HeatwaveDAO {
             stmt.setString(3, lastName);
             stmt.setInt(4, age);
             stmt.setString(5, sex);
-            stmt.setInt(6, cityId);
-            stmt.setString(7, streetAddress);
-            stmt.setString(8, postalCode);
+            stmt.setString(6, streetAddress);
+            stmt.setString(7, postalCode);
             stmt.executeUpdate();
             return getGeneratedKey(stmt);
         }
@@ -337,7 +334,8 @@ public class HeatwaveDAO {
     public List<String> getVictimsByHeatwave(int heatwaveId) throws SQLException {
         String sql = "SELECT v.Victim_ID, v.First_Name, v.Last_Name, v.Age, v.Sex, c.Name "
                    + "FROM Victim v "
-                   + "JOIN City c ON v.City_ID = c.City_ID "
+                   + "JOIN Postal_Area pa ON v.Postal_Code = pa.Postal_Code "
+                   + "JOIN City c ON pa.City_ID = c.City_ID "
                    + "WHERE v.Heatwave_ID = ? "
                    + "ORDER BY v.Age DESC";
 
@@ -481,9 +479,10 @@ public class HeatwaveDAO {
 
     /** Every hospital in a city. */
     public List<String> getHospitalsByCity(String cityName) throws SQLException {
-        String sql = "SELECT h.Hospital_ID, h.Street_Address, h.Postal_Address, h.Capacity "
+        String sql = "SELECT h.Hospital_ID, h.Street_Address, h.Postal_Code, h.Capacity "
                    + "FROM Hospital h "
-                   + "JOIN City c ON h.City_ID = c.City_ID "
+                   + "JOIN Postal_Area pa ON h.Postal_Code = pa.Postal_Code "
+                   + "JOIN City c ON pa.City_ID = c.City_ID "
                    + "WHERE c.Name = ? "
                    + "ORDER BY h.Capacity DESC";
 
@@ -497,7 +496,7 @@ public class HeatwaveDAO {
                     results.add(String.format("Hospital #%d, %s %s, capacity %d",
                         rs.getInt("Hospital_ID"),
                         rs.getString("Street_Address"),
-                        rs.getString("Postal_Address"),
+                        rs.getString("Postal_Code"),
                         rs.getInt("Capacity")));
                 }
             }
