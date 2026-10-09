@@ -2,7 +2,7 @@
 
 Group project for the Databases course, DSAI, Maastricht University.
 
-This database stores information about heatwaves, their temperatures, mortality, locations, prevention measures, infrastructure impact and victims.
+This database stores information about heatwaves, temperatures, mortality, locations, prevention measures, infrastructure impact and victims.
 
 ## Project overview
 
@@ -13,26 +13,20 @@ Everything we did so far, week by week:
 | 1 | **Societal problem definition** | [`Week 1 report`](heatwave-java/Weekly%20assignments/Week%201%20Societal%20Problem%20Definition/Databases%20group%20report%20-%20Heatwaves%20(2).docx) |
 | 2 | **Data modeling:** entities, relationships, ERD and normalization | [`Week 2 ERD`](heatwave-java/Weekly%20assignments/Week%202%20ERD/Assignment%202%20Databases%20(1).docx) |
 | 3 | **Database implementation:** schema, CRUD, mock data and advanced queries | [`source`](heatwave-java/heatwave-java/) |
-| 4 | **Stakeholder video and real-world data integration** | [`real life data`](heatwave-java/real%20life%20data/) |
-
-### Week 4: Stakeholder video
-
-Our Week 4 stakeholder video can be found here:
-
-[`Stakeholder video`](heatwave-java/Weekly%20assignments/Week%204%20Stakeholder%20Video/WhatsApp%20Video%202026-10-02%20at%2013.38.26.mp4)
+| 4 | **Stakeholder video:** what the database can answer and its limitations | [`Stakeholder video`](heatwave-java/Weekly%20assignments/Week%204%20Stakeholder%20Video/WhatsApp%20Video%202026-10-02%20at%2013.38.26.mp4) |
 
 ## Files
 
 Main project files:
 
-- `heatwave-java/heatwave-java/schema.sql` - creates the MySQL database and all tables
+- `heatwave-java/heatwave-java/schema.sql` - creates the MySQL database and tables
 - `heatwave-java/heatwave-java/src/DatabaseConnection.java` - MySQL connection
 - `heatwave-java/heatwave-java/src/HeatwaveDAO.java` - CRUD operations and advanced queries
-- `heatwave-java/heatwave-java/src/Main.java` - tests the database operations
-- `heatwave-java/heatwave-java/src/MockDataGenerator.java` - generates mock data
+- `heatwave-java/heatwave-java/src/Main.java` - basic CRUD demonstration
+- `heatwave-java/heatwave-java/src/MockDataGenerator.java` - generates the larger Week 3 mock dataset
 - `heatwave-java/real life data/real_world_data.sql` - inserts the real-world data
-- `heatwave-java/real life data/raw/` - temperature and mortality data used for the integration
-- `heatwave-java/real life data/raw/heatwave_joined.csv` - final joined real-world dataset
+- `heatwave-java/real life data/raw/` - files used for the real-world data integration
+- `heatwave-java/real life data/raw/heatwave_joined.csv` - final joined dataset
 
 ## How to run
 
@@ -44,6 +38,8 @@ Open MySQL Workbench and run:
 
 This creates the `heatwave_db` database and all required tables.
 
+Running `schema.sql` again resets the database.
+
 ### 2. Configure Java
 
 In `DatabaseConnection.java`, replace:
@@ -52,29 +48,35 @@ In `DatabaseConnection.java`, replace:
 
 with your local MySQL password.
 
-### 3. Load the real-world data
+Do not commit your real password.
 
-Run:
+### 3. Choose which data to use
+
+For the basic CRUD example, run:
+
+`Main.java`
+
+For the larger Week 3 mock dataset, run:
+
+`MockDataGenerator.java`
+
+For the real-world Paris and Madrid dataset, run:
 
 `heatwave-java/real life data/real_world_data.sql`
 
-This adds the Paris and Madrid records and inserts the real-world weekly observations.
-
-### 4. Run the Java project
-
-Run `Main.java` to test the connection and CRUD/query functionality.
+`Main.java`, `MockDataGenerator.java` and `real_world_data.sql` can contain overlapping countries and cities, so run `schema.sql` again before switching between them.
 
 ---
 
-## Real-world data
+## Real-world data integration
 
-Two complementary datasets were used.
+For the current assignment, two complementary real-world datasets were integrated into the database.
 
 ### Eurostat
 
-Eurostat dataset `demo_r_mwk3_t` was used for weekly mortality data.
+Dataset: `demo_r_mwk3_t` - weekly deaths by region.
 
-Regions:
+Regions used:
 
 - FR10 - Île-de-France
 - ES30 - Comunidad de Madrid
@@ -87,22 +89,26 @@ Source: [Eurostat bulk download facility](https://ec.europa.eu/eurostat/databrow
 
 ### ECA&D
 
-ECA&D daily temperature data was used for:
+Daily temperature data from the European Climate Assessment & Dataset.
+
+Elements used:
 
 - `TX` - maximum temperature
 - `TN` - minimum temperature
 - `TG` - mean temperature
 
-Stations:
+Stations used:
 
 - Orly / Paris - STAID 11249
 - Madrid Retiro - STAID 230
+
+License: free for non-commercial research and education under the ECA&D data policy.
 
 Downloaded: **2026-10-02**
 
 Source: [ECA&D](https://www.ecad.eu)
 
-The two datasets are complementary: Eurostat provides mortality data while ECA&D provides temperature measurements.
+The datasets are complementary because Eurostat provides mortality data while ECA&D provides temperature measurements.
 
 ## Data integration and cleaning
 
@@ -111,15 +117,16 @@ The final dataset contains **471 weekly observations**:
 - Paris: **236**
 - Madrid: **235**
 
-Cleaning included:
+The following cleaning and transformations were done:
 
-- removing missing ECA&D values (`-9999`)
-- handling missing and provisional Eurostat values
-- converting Eurostat ISO weeks to dates
-- aggregating daily temperature measurements into weekly values
-- keeping weeks with at least five valid temperature days
-- standardizing city and region names
-- checking for duplicate city-week records
+- missing ECA&D values (`-9999`) were removed
+- missing Eurostat values (`:`) were handled
+- provisional Eurostat values were handled
+- Eurostat ISO weeks were converted to dates
+- daily ECA&D temperature data was grouped into weeks
+- only weeks with at least five valid temperature days were kept
+- city and region names were standardized
+- duplicate city-week records were checked
 
 The years **2020 and 2021** were excluded because mortality during those years was strongly affected by COVID-19.
 
@@ -129,19 +136,48 @@ The years **2020 and 2021** were excluded because mortality during those years w
 - ECA&D TN → `Minimal_Temperature`
 - ECA&D TX → `Maximum_Temperature`
 - ECA&D TG → `Avg_Temperature`
-- `Heat_Index` → `0` because no heat-index source was included
+- `Heat_Index` → `0`
 
-Each `(city, week)` is stored as one row in `Heatwave`.
+There was no heat-index value available in the selected datasets, so `Heat_Index` was set to `0`.
 
-These rows represent weekly observations and are not necessarily individual heatwave events.
+Each `(city, week)` combination is stored as one row in `Heatwave`.
+
+These rows represent weekly observations and are not necessarily separate heatwave events.
+
+## Schema and constraint checks
+
+Before inserting the real-world data, the records were checked against the database constraints.
+
+We checked:
+
+- `End_Date >= Start_Date`
+- `Mortality >= 0`
+
+All **471 records** passed these checks.
 
 ## Query validation
 
-The Week 3 queries were run again after adding the real-world data.
+The Week 3 advanced queries were run again after adding the real-world data.
 
-- **Heatwave statistics by country:** now includes the Paris and Madrid weekly records
-- **Temperatures above country average:** successfully works with the real temperature data
-- **Injury survival statistics:** still uses mock data because the real-world datasets contain no individual victim or injury records
+### Query 1 - Heatwave statistics by country
+
+The query still works after adding the real-world data.
+
+France and Spain now contain many weekly observations from Paris and Madrid.
+
+The count represents weekly records rather than separate heatwave events.
+
+### Query 2 - Temperatures above the country average
+
+The query still works with the real-world temperature data.
+
+Paris and Madrid were used to check that the joins and temperature values work correctly.
+
+### Query 3 - Injury survival statistics
+
+This query still works, but the real-world datasets do not contain individual victim or injury data.
+
+Because of this, the injury statistics are based on the mock data.
 
 ## Normalization
 
@@ -149,29 +185,29 @@ The schema was checked again after integrating the real-world data.
 
 ### Victim
 
-`Victim` stores `Postal_Code` instead of storing both `Postal_Code` and `City_ID`.
+Previously, storing both `City_ID` and `Postal_Code` in `Victim` would create redundant information because a postal code already determines the city.
+
+The current structure only stores `Postal_Code`.
 
 The city can be found through:
 
 `Victim → Postal_Area → City`
 
-This avoids redundant data.
-
 ### Prevention
 
-`Prevention` references the related `Heatwave`.
+`Prevention` references its related `Heatwave`.
 
-Its location can already be determined through:
+The location can already be found through:
 
 `Prevention → Heatwave → Geography`
 
-Therefore a separate `Location_ID` is not needed.
+A separate `Location_ID` in `Prevention` is therefore not needed.
 
 ### Heatwave
 
-`Avg_Temperature` and `Mortality` are kept in `Heatwave` because they describe the weekly observation represented by that row.
+`Avg_Temperature` and `Mortality` are stored in `Heatwave` because they describe the weekly observation represented by that row.
 
-They do not create a transitive dependency by themselves.
+Keeping these values does not by itself create a transitive dependency.
 
 ## Limitations
 
@@ -179,18 +215,19 @@ The current real-world integration has several limitations:
 
 - only Paris and Madrid are included
 - weekly mortality does not mean that every death was caused by heat
-- city-week rows are observations, not necessarily separate heatwave events
-- no real-world victim or injury data is included
-- no real-world prevention or infrastructure-impact data is included
+- city-week rows are observations and not necessarily separate heatwave events
+- no real-world individual victim or injury data is included
+- no real-world prevention data is included
+- no real-world infrastructure-impact data is included
 - no real heat-index source was included
 
 ## Future work
 
-Possible improvements include adding:
+Possible improvements include:
 
-- more cities and countries
-- officially classified heatwave events
-- heat-attributable mortality data
-- hospital and injury data
-- prevention and infrastructure data
-- a real heat-index dataset
+- adding more cities and countries
+- using officially classified heatwave events
+- adding heat-attributable mortality data
+- adding real hospital and injury data
+- adding prevention and infrastructure-impact data
+- adding a real heat-index dataset
