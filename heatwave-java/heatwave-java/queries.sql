@@ -26,7 +26,7 @@ ORDER BY Avg_Max_Temperature DESC;
 
 
 -- Query 2
--- Author: Finnished
+-- Author: Finn Osterop
 --
 -- Question:
 -- Is average mortality higher during weeks where the maximum
