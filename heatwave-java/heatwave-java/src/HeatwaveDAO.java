@@ -520,7 +520,7 @@ public class HeatwaveDAO {
     public int countRows(String tableName) throws SQLException {
         // Table names cannot be parameterised, so we check it against a
         // fixed list first instead of pasting user input into the SQL.
-        List<String> allowed = List.of("Country", "City", "Geography", "Hospital",
+        List<String> allowed = List.of("Country", "City","Postal_Area", "Geography", "Hospital",
             "Heatwave", "Prevention", "Infrastructure_Impact", "Victim",
             "Injury_Type", "Victim_Injury");
 

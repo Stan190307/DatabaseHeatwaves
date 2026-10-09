@@ -70,6 +70,8 @@ CREATE TABLE Heatwave (
     Mortality INT,
     Heat_Index DECIMAL(5, 2),
     Prevention_ID INT NULL,
+    CHECK (End_Date >= Start_Date), 
+    CHECK (Mortality IS NULL OR Mortality >= 0),
     FOREIGN KEY (Location_ID) REFERENCES Geography(Location_ID) ON DELETE CASCADE
 );
 
