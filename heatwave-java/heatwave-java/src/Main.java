@@ -1,6 +1,5 @@
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.List;
 
 /**
  * Demonstrates basic SQL operations
@@ -31,11 +30,18 @@ public class Main {
             int maastricht = dao.insertCity("Maastricht", "Limburg", netherlands);
             System.out.println("City inserted, ID = " + maastricht);
 
+            dao.insertPostalArea("6229 HX", maastricht);
+            dao.insertPostalArea("6211 PB", maastricht);
+            dao.insertPostalArea("6211 SZ", maastricht);
+
+            int hospital = dao.insertHospital(
+            "6229 HX",
+            "P. Debyelaan 25",
+            715
+            );
+
             int location = dao.insertGeography(maastricht, 50.8514, 5.6910, "Maastricht Aachen Airport");
             System.out.println("Geography inserted, ID = " + location);
-
-            int hospital = dao.insertHospital(maastricht, "P. Debyelaan 25", "6229 HX", 715);
-            System.out.println("Hospital inserted, ID = " + hospital);
 
             // Heatwave goes in without a prevention link (see note below).
             int heatwave = dao.insertHeatwave(
@@ -47,7 +53,7 @@ public class Main {
             System.out.println("Heatwave inserted, ID = " + heatwave);
 
             int prevention = dao.insertPrevention(
-                heatwave, location,
+                heatwave,
                 "Cooling centres opened in public libraries", true);
             System.out.println("Prevention inserted, ID = " + prevention);
 
@@ -59,9 +65,9 @@ public class Main {
             System.out.println("Infrastructure impact inserted");
 
             int victim1 = dao.insertVictim(heatwave, "Jan", "de Vries", 78, "Male",
-                maastricht, "Brusselsestraat 12", "6211 PB");
+                "Brusselsestraat 12", "6211 PB");
             int victim2 = dao.insertVictim(heatwave, "Anna", "Bakker", 83, "Female",
-                maastricht, "Grote Gracht 44", "6211 SZ");
+                "Grote Gracht 44", "6211 SZ");
             System.out.println("Victims inserted, IDs = " + victim1 + ", " + victim2);
 
             int heatstroke = dao.insertInjuryType("Heatstroke",
@@ -143,7 +149,7 @@ for (String line : dao.getInjurySurvivalStats()) {
 
             // ---- Step 5: row counts -----------------------------------
             System.out.println("=== Row counts ===");
-            String[] tables = {"Country", "City", "Geography", "Hospital", "Heatwave",
+            String[] tables = {"Country", "City","Postal_Area", "Geography", "Hospital", "Heatwave",
                                "Prevention", "Infrastructure_Impact", "Victim",
                                "Injury_Type", "Victim_Injury"};
             for (String table : tables) {

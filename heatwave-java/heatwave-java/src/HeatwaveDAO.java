@@ -50,6 +50,18 @@ public class HeatwaveDAO {
         }
     }
 
+    public void insertPostalArea(String postalCode, int cityId) throws SQLException {
+    String sql = "INSERT INTO Postal_Area (Postal_Code, City_ID) VALUES (?, ?)";
+
+    try (Connection conn = DatabaseConnection.getConnection();
+         PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+        stmt.setString(1, postalCode);
+        stmt.setInt(2, cityId);
+        stmt.executeUpdate();
+        }
+    }
+
     public int insertGeography(int cityId, double latitude, double longitude,
                                String weatherStation) throws SQLException {
         String sql = "INSERT INTO Geography "
