@@ -117,6 +117,17 @@ public class MockDataGenerator {
                 "Milan Linate Weather Station"
             );
 
+
+            dao.insertPostalArea("6229 AA", maastricht);
+            dao.insertPostalArea("6211 AA", maastricht);
+            dao.insertPostalArea("6211 BB", maastricht);
+
+            dao.insertPostalArea("1105 AZ", amsterdam);
+            dao.insertPostalArea("1012 AB", amsterdam);
+            dao.insertPostalArea("1054 AC", amsterdam);
+
+            dao.insertPostalArea("75013", paris);
+            dao.insertPostalArea("75005", paris);
             dao.insertPostalArea("75011", paris);
 
             dao.insertPostalArea("69003", lyon);
