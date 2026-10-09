@@ -231,3 +231,11 @@ Possible improvements include:
 - adding real hospital and injury data
 - adding prevention and infrastructure-impact data
 - adding a real heat-index dataset
+
+## Data publication
+
+The final MySQL database dump has been published on Zenodo.
+
+**DOI:** [10.5281/zenodo.23270458](https://doi.org/10.5281/zenodo.23270458)
+
+The published dump contains the database schema and 471 real-world weekly observations for Paris and Madrid. It contains no individual victim records or personal data.
